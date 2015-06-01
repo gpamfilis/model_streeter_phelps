@@ -20,6 +20,10 @@ save the graphs to a folder
 class StreeterPhelps(object):
 
     def __init__(self):
+        """
+
+
+        """
         self.data = pd.read_excel('Data/Streeter_Phelps_input.xlsx', sheetname='data')
         self.constants = pd.read_excel('Data/Streeter_Phelps_input.xlsx', sheetname='constants')
         self.distance_miles = self.data['distance'].values
