@@ -6,9 +6,7 @@ import numpy as np
 from numpy.random import ranf
 import pandas as pd
 from scipy.stats import linregress
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import cm
+from graphs import graph_two_lines
 
 
 """
@@ -16,6 +14,7 @@ add critical distance measurement for both cases.
 save the graphs to a folder
 
 """
+
 
 class StreeterPhelps(object):
 
@@ -46,26 +45,6 @@ class StreeterPhelps(object):
         self.kd = -linregress(self.distance_meters, self.log_L)[0]*self.uav*60*60*24
 
     @staticmethod
-    def general_graph(x, y, title, xlabel, ylabel):
-        plt.plot(x,y,'.')
-        plt.title(title)
-        plt.grid(True)
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
-        plt.show()
-
-    @staticmethod
-    def graph_two_lines(x1, y1, x2, y2):
-        plt.plot(x1, y1, label = "Optimum Model Curve")
-        plt.plot(x2, y2, '.', label="Field Data Points")
-        plt.title("Concentration of D.O. (mg/L) versus Distance (meters)")
-        plt.grid(True)
-        plt.xlabel("Distance (meters)")
-        plt.ylabel("DO (mg/L)")
-        plt.legend(loc="upper right")
-        plt.show()
-
-    @staticmethod
     def root_mean_square_error(cf, cm):  # root mean square error
         n = len(cf)
         differences = []
@@ -78,6 +57,11 @@ class StreeterPhelps(object):
         sum_of_differences = np.sum(squared_difference)
         rmse = np.sqrt(sum_of_differences/n)
         return rmse
+
+    @staticmethod
+    def xc_critical_distance(ka, kd, l0, d0, u):
+        xc = (u/(ka - kd))*(np.log((ka/kd)*(1-((ka*kd)/kd)*(d0/l0))))
+        print "the critical distance is: {} meters".format(xc)
 
     @staticmethod
     def streeter_phelps(Csat, C0, L0, ka, kd, time):  # time is a 1-D array or list. #Streeter-Phelps
@@ -97,7 +81,7 @@ class StreeterPhelps(object):
         kamin1 = kas[np.where(RMSES == np.min(RMSES))[0]]  # minimum ka.
         print "the minimum ka is: ", kamin1, "and the corresponding root_mean_square_error is: ", np.min(RMSES)
         cm = self.streeter_phelps(self.Csat, self.C0, self.L0, 0.2032, self.kd, self.time)
-        self.graph_two_lines(self.distance_meters, cm,self.distance_meters, self.DO)
+        graph_two_lines(self.distance_meters, cm,self.distance_meters, self.DO)
         # this will store the model data using the ka with the least error
         # (with kd = 0.23)
 
@@ -120,46 +104,8 @@ class StreeterPhelps(object):
             " and kd equal to: ", kdmin
         coptimum = self.streeter_phelps(self.Csat, self.C0, self.L0, kamin, kdmin, self.time)
 
-        self.graph_two_lines(self.distance_meters, coptimum,self.distance_meters, self.DO)
+        graph_two_lines(self.distance_meters, coptimum,self.distance_meters, self.DO)
 
-    @staticmethod
-    def scatterplot3D(x, y, z, title, xlabel, ylabel, zlabel):
-        import matplotlib.pyplot as plt
-        from mpl_toolkits.mplot3d import Axes3D
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        ax.scatter(x, y, z, c='g', marker='.')
-        ax.set_title(title)
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
-        ax.set_zlabel(zlabel)
-        plt.show()
-
-    @staticmethod
-    def triangle3dplot(x,y,z):
-
-        #x = kas2
-        #y = kds2
-        #z = RMSE2
-        fig = plt.figure()
-        ax = fig.gca(projection='3d')
-        ax.set_title("root_mean_square_error versus ka and kd")
-        ax.set_xlabel('ka (1/day)')
-        ax.set_ylabel('kd (1/day)')
-        ax.set_zlabel('root_mean_square_error')
-        ax.plot_trisurf(x, y, z, cmap=cm.jet, linewidth=0.1)
-        plt.show()
-
-    @staticmethod
-    def graphtwolines(x1,y1,x2,y2):
-        plt.plot(x1,y1,label = "Optimum Model Curve")
-        plt.plot(x2,y2,'.',label= "Field Data Points")
-        plt.title("Concentration of D.O. (mg/L) versus Distance (meters)")
-        plt.grid(True)
-        plt.xlabel("Distance (meters)")
-        plt.ylabel("DO (mg/L)")
-        plt.legend(loc = "upper right")
-        plt.show()
 
 
 if __name__ == '__main__':
