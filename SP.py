@@ -161,9 +161,9 @@ class StreeterPhelps(object):
         plt.legend(loc = "upper right")
         plt.show()
 
+
 if __name__ == '__main__':
     sp = StreeterPhelps()
     sp.find_ka_given_kd()
     sp.fit_models_to_data_ka_and_kd_unknown()
-
 
