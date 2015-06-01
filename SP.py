@@ -97,17 +97,17 @@ class StreeterPhelps(object):
         kamin1 = kas[np.where(RMSES == np.min(RMSES))[0]]  # minimum ka.
         print "the minimum ka is: ", kamin1, "and the corresponding root_mean_square_error is: ", np.min(RMSES)
         cm = self.streeter_phelps(self.Csat, self.C0, self.L0, 0.2032, self.kd, self.time)
-        self.general_graph(self.distance_meters,cm,title=None,xlabel=None,ylabel=None)
+        self.general_graph(self.distance_meters, cm, title=None, xlabel='distance-x [m]',ylabel='DO - [mg/L]')
         # this will store the model data using the ka with the least error
         # (with kd = 0.23)
 
-    def fit_models_to_data_ka_and_kd_unknown(self):
-        values = 1000  # number of points in each array
-        kas2 = np.zeros(values)
-        kds2 = np.zeros(values)
-        RMSE2 = np.zeros(values)
-        for i in range(values):
-            if i % values == 500:
+    def fit_models_to_data_ka_and_kd_unknown(self, runs=10000):
+        # number of points in each array
+        kas2 = np.zeros(runs)
+        kds2 = np.zeros(runs)
+        RMSE2 = np.zeros(runs)
+        for i in range(runs):
+            if i % runs == 500:
                 print i
             kas2[i] = ranf()
             kds2[i] = ranf()
