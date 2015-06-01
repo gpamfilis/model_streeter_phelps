@@ -52,13 +52,13 @@ class StreeterPhelps(object):
 
     @staticmethod
     def graph_two_lines(x1, y1, x2, y2):
-        plt.plot(x1,y1,label = "Optimum Model Curve")
-        plt.plot(x2,y2,'.',label= "Field Data Points")
+        plt.plot(x1, y1, label = "Optimum Model Curve")
+        plt.plot(x2, y2, '.', label="Field Data Points")
         plt.title("Concentration of D.O. (mg/L) versus Distance (meters)")
         plt.grid(True)
         plt.xlabel("Distance (meters)")
         plt.ylabel("DO (mg/L)")
-        plt.legend(loc = "upper right")
+        plt.legend(loc="upper right")
         plt.show()
 
     @staticmethod
@@ -90,14 +90,10 @@ class StreeterPhelps(object):
         for i in range(number_of_trials):
             RMSES[i] = self.root_mean_square_error(self.DO, self.streeter_phelps(self.Csat, self.C0, self.L0,
                                                                                  kas[i], self.kd, self.time))
-        # find the the minimum error in the RMSES array. find the index
-        # (location) of that value. apply that location to kas list to find the
-        # optimum ka with the smallest error.
-
         kamin1 = kas[np.where(RMSES == np.min(RMSES))[0]]  # minimum ka.
         print "the minimum ka is: ", kamin1, "and the corresponding root_mean_square_error is: ", np.min(RMSES)
         cm = self.streeter_phelps(self.Csat, self.C0, self.L0, 0.2032, self.kd, self.time)
-        self.general_graph(self.distance_meters, cm, title=None, xlabel='distance-x [m]',ylabel='DO - [mg/L]')
+        self.graph_two_lines(self.distance_meters, cm,self.distance_meters, self.DO)
         # this will store the model data using the ka with the least error
         # (with kd = 0.23)
 
@@ -120,7 +116,7 @@ class StreeterPhelps(object):
             " and kd equal to: ", kdmin
         coptimum = self.streeter_phelps(self.Csat, self.C0, self.L0, kamin, kdmin, self.time)
 
-        self.graph_two_lines(self.distance_meters, self.DO, self.distance_meters, coptimum)
+        self.graph_two_lines(self.distance_meters, coptimum,self.distance_meters, self.DO)
 
     @staticmethod
     def scatterplot3D(x, y, z, title, xlabel, ylabel, zlabel):
