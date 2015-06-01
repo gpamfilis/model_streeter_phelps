@@ -11,6 +11,12 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 
 
+"""
+add critical distance measurement for both cases.
+save the graphs to a folder
+
+"""
+
 class StreeterPhelps(object):
 
     def __init__(self):
