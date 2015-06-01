@@ -2,7 +2,6 @@ __author__ = 'George Pamfilis'
 __version__ = '1.0'
 __contact__ = 'gpamfilis@gmail.com'
 
-
 import numpy as np
 from numpy.random import ranf
 import pandas as pd
@@ -155,7 +154,6 @@ class StreeterPhelps(object):
         plt.ylabel("DO (mg/L)")
         plt.legend(loc = "upper right")
         plt.show()
-
 
 if __name__ == '__main__':
     sp = StreeterPhelps()
