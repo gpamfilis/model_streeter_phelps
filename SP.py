@@ -6,17 +6,16 @@ import numpy as np
 import numpy.random
 import pandas as pd
 from scipy.stats import linregress
-from graphs import graph_two_lines
-
-
-"""
-save the graphs to a folder
-"""
+from graphs import graph_two_lines, general_graph
 
 
 class StreeterPhelps(object):
 
     def __init__(self):
+        """
+
+        :rtype : object
+        """
         self.data = pd.read_excel('Data/Streeter_Phelps_input.xlsx', sheetname='data')
         self.constants = pd.read_excel('Data/Streeter_Phelps_input.xlsx', sheetname='constants')
         self.distance_miles = self.data['distance'].values
@@ -25,7 +24,7 @@ class StreeterPhelps(object):
         self.distance_miles[0] = 0
         self.distance_meters = self.distance_miles * 1.61*1000
         self.uav = self.constants['u'][0]  # m/s
-        self.Csat = self.constants['csat'][0]
+        self.c_sat = self.constants['csat'][0]
         self.C0 = self.constants['c0'][0]
         self.D0 = self.constants['csat'] - self.constants['c0']
         self.L0 = self.constants['L0'][0]  # BOD
@@ -33,9 +32,8 @@ class StreeterPhelps(object):
         self.L = self.data['L-BOD'].values  # BOD
         self.log_L = np.log(self.L)
         self.time = self.distance_meters/(self.uav*60*60*24)
-        # self.uav
         self.DO = self.data['DO'].values
-        # plt.scatter(distance_meters,log_L)
+        general_graph(self.distance_meters, self.log_L)
         self.kd = -linregress(self.distance_meters, self.log_L)[0]*self.uav*60*60*24
 
     @staticmethod
