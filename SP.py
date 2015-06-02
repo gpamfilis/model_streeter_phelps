@@ -3,26 +3,20 @@ __version__ = '1.0'
 __contact__ = 'gpamfilis@gmail.com'
 
 import numpy as np
-from numpy.random import ranf
+import numpy.random
 import pandas as pd
 from scipy.stats import linregress
 from graphs import graph_two_lines
 
 
 """
-add critical distance measurement for both cases.
 save the graphs to a folder
-
 """
 
 
 class StreeterPhelps(object):
 
     def __init__(self):
-        """
-
-
-        """
         self.data = pd.read_excel('Data/Streeter_Phelps_input.xlsx', sheetname='data')
         self.constants = pd.read_excel('Data/Streeter_Phelps_input.xlsx', sheetname='constants')
         self.distance_miles = self.data['distance'].values
@@ -45,71 +39,86 @@ class StreeterPhelps(object):
         self.kd = -linregress(self.distance_meters, self.log_L)[0]*self.uav*60*60*24
 
     @staticmethod
-    def root_mean_square_error(cf, cm):  # root mean square error
-        n = len(cf)
-        differences = []
-        squared_difference = []
-        for i in range(len(cf)):
-            dif = cf[i] - cm[i]
-            differences.append(dif)
-        for i in range(len(cf)):
-            squared_difference.append(differences[i]**2)
-        sum_of_differences = np.sum(squared_difference)
-        rmse = np.sqrt(sum_of_differences/n)
+    def root_mean_square_error(experimental_data, model_data):
+        """
+        :param experimental_data:
+        :param model_data:
+        :return:
+        """
+
+        rmse = np.sqrt(np.sum((experimental_data - model_data)**2) / experimental_data.shape[0])
         return rmse
 
     @staticmethod
     def xc_critical_distance(ka, kd, l0, d0, u):
-        xc = (u/(ka - kd))*(np.log((ka/kd)*(1-((ka*kd)/kd)*(d0/l0))))
+        """
+        :param ka:
+        :param kd:
+        :param l0:
+        :param d0:
+        :param u:
+        :return:
+        """
+        xc = (u / (ka - kd)) * (np.log((ka / kd) * (1 - ((ka * kd) / kd) * (d0 / l0))))
         print "the critical distance is: {} meters".format(xc)
 
     @staticmethod
-    def streeter_phelps(Csat, C0, L0, ka, kd, time):  # time is a 1-D array or list. #Streeter-Phelps
-
-        C = lambda t: Csat - ((Csat - C0)*np.exp(-ka*t))-((kd*L0)/(ka-kd))*(np.exp(-kd*t)-np.exp(-ka*t))
-        concentrations = np.zeros(len(time))
-        for i, t in enumerate(time):
-            concentrations[i] = C(t)
-        return concentrations
+    def streeter_phelps(c_saturation, c0, l0, ka, kd, time):  # time is a 1-D array or list. #Streeter-Phelps
+        """
+        :param c_saturation:
+        :param c0:
+        :param l0:
+        :param ka:
+        :param kd:
+        :param time:
+        :return:
+        """
+        c = lambda t: c_saturation - ((c_saturation - c0) * np.exp(-ka * t)) - ((kd * l0)/(ka - kd)) * \
+                                                                               (np.exp(-kd * t) - np.exp(-ka * t))
+        return c(time)
 
     def find_ka_given_kd(self, number_of_trials=1000):
-        kas = np.linspace(0., 1, num=number_of_trials)
-        RMSES = np.zeros(number_of_trials)
+        """
+        :param number_of_trials:
+        :return:
+        """
+        ka_array = np.linspace(0., 1, num=number_of_trials)
+        root_error_array = np.zeros(number_of_trials)
         for i in range(number_of_trials):
-            RMSES[i] = self.root_mean_square_error(self.DO, self.streeter_phelps(self.Csat, self.C0, self.L0,
-                                                                                 kas[i], self.kd, self.time))
-        kamin1 = kas[np.where(RMSES == np.min(RMSES))[0]]  # minimum ka.
-        print "the minimum ka is: ", kamin1, "and the corresponding root_mean_square_error is: ", np.min(RMSES)
-        cm = self.streeter_phelps(self.Csat, self.C0, self.L0, 0.2032, self.kd, self.time)
-        graph_two_lines(self.distance_meters, cm,self.distance_meters, self.DO)
+            root_error_array[i] = self.root_mean_square_error(self.DO,
+                                                              self.streeter_phelps(self.Csat, self.C0, self.L0,
+                                                                                   ka_array[i], self.kd, self.time))
+        ka_optimum_given_kd = ka_array[np.where(root_error_array == np.min(root_error_array))[0]]  # minimum ka.
+        print "the minimum ka is: ", ka_optimum_given_kd, "and the corresponding root_mean_square_error is: ", \
+            np.min(root_error_array)
+        cm = self.streeter_phelps(self.Csat, self.C0, self.L0, ka_optimum_given_kd, self.kd, self.time)
+        graph_two_lines(self.distance_meters, cm, self.distance_meters, self.DO)
         # this will store the model data using the ka with the least error
         # (with kd = 0.23)
 
     def fit_models_to_data_ka_and_kd_unknown(self, runs=10000):
-        # number of points in each array
-        kas2 = np.zeros(runs)
-        kds2 = np.zeros(runs)
-        RMSE2 = np.zeros(runs)
+        ka_available = np.zeros(runs)
+        kd_available = np.zeros(runs)
+        root_s_error = np.zeros(runs)
         for i in range(runs):
-            if i % runs == 500:
-                print i
-            kas2[i] = ranf()
-            kds2[i] = ranf()
-            RMSE2[i] = self.root_mean_square_error(self.DO, self.streeter_phelps(self.Csat, self.C0, self.L0,
-                                                                                 kas2[i], kds2[i], self.time))
-        itemindex = np.where(RMSE2 == np.min(RMSE2))
-        kamin = kas2[itemindex[0][0]]
-        kdmin = kds2[itemindex[0][0]]
-        print "The smallest root_mean_square_error was: ", np.min(RMSE2), " for ka equal to: ", kamin, \
-            " and kd equal to: ", kdmin
-        coptimum = self.streeter_phelps(self.Csat, self.C0, self.L0, kamin, kdmin, self.time)
+            ka_available[i] = numpy.random.ranf()
+            kd_available[i] = numpy.random.ranf()
+            root_s_error[i] = self.root_mean_square_error(self.DO, self.streeter_phelps(self.Csat,
+                                                                                        self.C0, self.L0,
+                                                                                        ka_available[i],
+                                                                                        kd_available[i],
+                                                                                        self.time))
+        location_of_min_error = np.where(root_s_error == np.min(root_s_error))
+        ka_min = ka_available[location_of_min_error[0][0]]
+        kd_min = kd_available[location_of_min_error[0][0]]
+        print "The smallest root_mean_square_error was: ", np.min(root_s_error), " for ka equal to: ", ka_min, \
+            " and kd equal to: ", kd_min
+        self.xc_critical_distance(ka_min, kd_min, self.L0, self.D0, self.uav*60*60*24)
+        optimum_model_data = self.streeter_phelps(self.Csat, self.C0, self.L0, ka_min, kd_min, self.time)
 
-        graph_two_lines(self.distance_meters, coptimum,self.distance_meters, self.DO)
-
-
+        graph_two_lines(self.distance_meters, optimum_model_data, self.distance_meters, self.DO)
 
 if __name__ == '__main__':
     sp = StreeterPhelps()
     sp.find_ka_given_kd()
     sp.fit_models_to_data_ka_and_kd_unknown()
-
