@@ -84,12 +84,12 @@ class StreeterPhelps(object):
         root_error_array = np.zeros(number_of_trials)
         for i in range(number_of_trials):
             root_error_array[i] = self.root_mean_square_error(self.DO,
-                                                              self.streeter_phelps(self.Csat, self.C0, self.L0,
+                                                              self.streeter_phelps(self.c_sat, self.C0, self.L0,
                                                                                    ka_array[i], self.kd, self.time))
         ka_optimum_given_kd = ka_array[np.where(root_error_array == np.min(root_error_array))[0]]  # minimum ka.
         print "the minimum ka is: ", ka_optimum_given_kd, "and the corresponding root_mean_square_error is: ", \
             np.min(root_error_array)
-        cm = self.streeter_phelps(self.Csat, self.C0, self.L0, ka_optimum_given_kd, self.kd, self.time)
+        cm = self.streeter_phelps(self.c_sat, self.C0, self.L0, ka_optimum_given_kd, self.kd, self.time)
         graph_two_lines(self.distance_meters, cm, self.distance_meters, self.DO)
         # this will store the model data using the ka with the least error
         # (with kd = 0.23)
@@ -101,7 +101,7 @@ class StreeterPhelps(object):
         for i in range(runs):
             ka_available[i] = numpy.random.ranf()
             kd_available[i] = numpy.random.ranf()
-            root_s_error[i] = self.root_mean_square_error(self.DO, self.streeter_phelps(self.Csat,
+            root_s_error[i] = self.root_mean_square_error(self.DO, self.streeter_phelps(self.c_sat,
                                                                                         self.C0, self.L0,
                                                                                         ka_available[i],
                                                                                         kd_available[i],
@@ -112,7 +112,7 @@ class StreeterPhelps(object):
         print "The smallest root_mean_square_error was: ", np.min(root_s_error), " for ka equal to: ", ka_min, \
             " and kd equal to: ", kd_min
         self.xc_critical_distance(ka_min, kd_min, self.L0, self.D0, self.uav*60*60*24)
-        optimum_model_data = self.streeter_phelps(self.Csat, self.C0, self.L0, ka_min, kd_min, self.time)
+        optimum_model_data = self.streeter_phelps(self.c_sat, self.C0, self.L0, ka_min, kd_min, self.time)
 
         graph_two_lines(self.distance_meters, optimum_model_data, self.distance_meters, self.DO)
 
