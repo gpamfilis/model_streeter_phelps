@@ -2,6 +2,7 @@ __author__ = 'gpamfilis'
 __version__ = '1.0'
 __contact__ = 'gpamfilis@gmail.com'
 
+
 import numpy as np
 import pandas as pd
 from scipy.stats import linregress
