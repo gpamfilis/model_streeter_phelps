@@ -12,6 +12,8 @@ import matplotlib.pyplot as plt
 if __name__ == '__main__':
     sp = StreeterPhelps()
     k_n = sp.find_ka_and_kd()
-    pd.DataFrame(k_n, columns=['ka', 'kb']).to_csv('ka_kb_parameters.txt')
-    del sp, k_n
+    k_n_df = pd.DataFrame([k_n[0][0], k_n[0][1]]).T
+    k_n_df.columns = ['ka', 'kb']
+    k_n_df.to_csv('Data/ka_kb_parameters.txt', index=None)
+    del sp, k_n, k_n_df
 
